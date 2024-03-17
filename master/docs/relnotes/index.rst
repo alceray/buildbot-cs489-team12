@@ -71,7 +71,7 @@ Features
 Misc
 ----
 
-- github-limit-test-run, importlib_resources
+- github-limit-test-run, importlib_resources, message-formatter-function-raw, README
 
 
 
