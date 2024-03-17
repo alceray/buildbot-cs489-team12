@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.8'
+          python-version: "3.8"
       - name: Install dependencies
         run: |
           python -m venv .venv
@@ -62,7 +62,7 @@ jobs:
           from: q54lin@uwaterloo.ca
           body: |
             The Buildbot team is pleased to announce the release of Buildbot ${GITHUB_REF_NAME}. This release includes numerous bug fixes and improvements.
-            
+
             Contributors to this release include:
             ${{ env.CONTRIBUTORS }}
 

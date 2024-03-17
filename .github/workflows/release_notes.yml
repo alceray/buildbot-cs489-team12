@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version x.y.z'
+        description: "Release version x.y.z"
         required: true
 
 jobs:
@@ -21,7 +21,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
-          python-version: '3.8'
+        with:
+          python-version: "3.8"
       - name: Generate Release Notes
         run: |
           python -m venv .venv
