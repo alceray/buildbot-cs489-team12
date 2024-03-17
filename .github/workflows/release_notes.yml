@@ -25,11 +25,9 @@ jobs:
           python-version: "3.8"
       - name: Install dependencies
         run: |
-          python -m venv .venv
-          python -m pip install --upgrade pip
+          pip install -U pip setuptools wheel
+          pip install -r requirements-ci.txt -r requirements-cidocs.txt
           pip install towncrier virtualenv sphinx
-          make virtualenv VENV_PY_VERSION=python3.8
-          . .venv/bin/activate
       - name: Generate release notes
         run: |
           git config user.name github-actions 
