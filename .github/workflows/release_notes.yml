@@ -28,13 +28,6 @@ jobs:
           pip install -U pip setuptools wheel
           pip install -r requirements-ci.txt -r requirements-cidocs.txt
           pip install towncrier virtualenv sphinx
-      - name: Rename newsfragments
-        run: |
-          for file in newsfragments/*; do
-            if ! [[ "$file" =~ \.(feature|bugfix|doc|removal|change|misc)$ ]]; then
-              mv "$file" "${file%.*}.misc"
-            fi
-          done
       - name: Generate release notes
         run: |
           git config user.name github-actions 
