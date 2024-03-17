@@ -27,7 +27,7 @@ jobs:
         run: |
           pip install -U pip setuptools wheel
           pip install -r requirements-ci.txt -r requirements-cidocs.txt
-          pip install towncrier sphinx
+          pip install towncrier virtualenv sphinx
       - name: Rename newsfragments
         run: |
           for file in newsfragments/*; do
