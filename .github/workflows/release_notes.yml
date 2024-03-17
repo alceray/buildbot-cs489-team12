@@ -28,7 +28,7 @@ jobs:
           python -m venv .venv
           source .venv/bin/activate
           pip install towncrier
-          make release_notes ${{ github.event.inputs.version }}
+          make release_notes VERSION=${{ github.event.inputs.version }}
       - name: Build Release Docs
         run: |
           source .venv/bin/activate
