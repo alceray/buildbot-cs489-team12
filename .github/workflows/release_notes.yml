@@ -1,0 +1,57 @@
+# Step 2:
+
+# Open a new branch (e.g. release) and run the following:
+# . .venv/bin/activate && make release_notes VERSION=x.y.z
+# This collects the release notes using the towncrier tool and then commits the result. This step is done as a PR so that CI can check for spelling errors and similar issues. Local checks are insufficient as spelling check in particular depends on what dictionaries are installed.
+# It's best to run make docs-release afterwards and check master/docs/_build/html/relnotes/index.html file for obvious rendering errors. This will have much faster turnaround compared to if the error is noticed after the CI runs. If any errors are found, just amend the commit created by make release_notes.
+# Certain file names are not properly supported by the towncrier tool and it ignores them. Check newsfragments directory for any forgotten release notes
+
+name: Generate Release Notes
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version x.y.z'
+        required: true
+
+jobs:
+  release_notes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+          python-version: 3.8
+      - name: Generate Release Notes
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install towncrier
+          make release_notes ${{ github.event.inputs.version }}
+      - name: Build Release Docs
+        run: |
+          source .venv/bin/activate
+          make docs-release
+      - name: Check for rendering errors in index.html
+        run: |
+          if ! grep -q "Rendering Error" master/docs/_build/html/relnotes/index.html; then
+              echo "No rendering errors found."
+          else
+              echo "Rendering errors found in index.html. Exiting."
+              exit 1
+          fi
+      - name: Check for ignored newsfragments
+        run: |
+          if ls newsfragments/*.bugfix.md 1> /dev/null 2>&1; then
+              echo "Ignored newsfragments found. Exiting."
+              exit 1
+          else
+              echo "No ignored newsfragments found."
+          fi
+      - name: Push changes and Create PR
+        run: |
+          git checkout -b release-${{ github.event.inputs.version }}
+          git push origin release-${{ github.event.inputs.version }}
+          gh pr create --title "Release Notes for Version ${{ github.event.inputs.version }}" --body "Generated release notes for version ${{ github.event.inputs.version }}" --base release-automation --head release-${{ github.event.inputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

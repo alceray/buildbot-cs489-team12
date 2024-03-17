@@ -1,0 +1,41 @@
+# Step 4:
+
+# This step requires the Buildbot git repository to contain buildbot remote that points to https://github.com/buildbot/buildbot and can be pushed to.
+# Additionally, the Buildbot docs repository (https://github.com/buildbot/bbdocs) must be checked out at ../bbdocs path.
+# Pull the merge commit created on the master branch during the step 2. Then run:
+# make release VERSION=x.y.z
+# This will create the required tags, make documentation, copy it to bbdocs repo and push everything.
+
+name: Perform Release
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.title, 'Release Notes for ')
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: buildbot/buildbot
+          fetch-depth: 0
+          path: buildbot
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v3
+        with:
+          repository: buildbot/bbdocs
+          fetch-depth: 0
+          path: ../bbdocs
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+      - name: Release
+        run: |
+          cd buildbot
+          python -m venv .venv
+          source .venv/bin/activate
+          VERSION=$(echo ${{ github.event.pull_request.title }} | cut -d' ' -f5)
+          make release VERSION=$VERSION
