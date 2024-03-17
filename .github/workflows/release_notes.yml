@@ -38,8 +38,8 @@ jobs:
           make docs-release
       - name: Push changes and Create PR
         run: |
-          git checkout -b release-${{ github.event.inputs.version }}
-          git push origin release-${{ github.event.inputs.version }}
-          gh pr create --title "Release Notes for Version ${{ github.event.inputs.version }}" --body "Generated release notes for version ${{ github.event.inputs.version }}" --base master --head release-${{ github.event.inputs.version }}
+          git checkout -b release-notes-${{ github.event.inputs.version }}
+          git push origin release-notes-${{ github.event.inputs.version }}
+          gh pr create --title "Release Notes for Version ${{ github.event.inputs.version }}" --body "Generated release notes for version ${{ github.event.inputs.version }}" --base master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
