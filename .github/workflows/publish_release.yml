@@ -1,0 +1,70 @@
+# Step 6:
+
+# This step requires GitHub Hub tool to be installed and authorized to GitHub (https://github.com/github/hub). Additionally you have to have access to GPG key that is used to sign the releases. Finally, you have to be added as a maintainer to all Buildbot PyPi projects.
+# To complete the release just run the following:
+# make finishrelease
+# The above will download the releases from GitHub and upload them using twine. If you get bytes-related error after entering Pypi password, you'll need to upgrade Twine.
+
+# Step 7:
+
+# This step involves announcing the release of the new Buildbot version on several channels. Write an email to the BuildBot mailing lists: announce@buildbot.net, devel@buildbot.net, users@buildbot.net. Write a blog post on the Buildbot Medium account: https://medium.com/buildbot. The blog post should include the highlights of the release in less monotonous style than the release notes. Any extra important remarks can be added there. Lastly, include the output of git shortlog --no-merges -ns v<prev_version>...v<curr_version> to recognize the contributors.
+
+name: Publish Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  upload-to-pypi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install twine
+      - name: Setup GPG
+        uses: crazy-max/ghaction-import-gpg@v5
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+      - name: Upload Release
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          make finishrelease
+  send-announcement-email:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Generate Contributors List
+        id: contributors
+        run: |
+          prev_version=$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))
+          curr_version=$(git describe --abbrev=0 --tags)
+          echo "CONTRIBUTORS=$(git shortlog --no-merges -ns $prev_version...$curr_version | sed ':a;N;$!ba;s/\n/\\n/g')" >> $GITHUB_ENV
+      - name: Send Email to Mailing Lists
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: New Buildbot Release
+          to: archeray01@gmail.com
+          from: q54lin@uwaterloo.ca
+          body: |
+            The Buildbot team is pleased to announce the release of Buildbot ${GITHUB_REF_NAME}. This release includes numerous bug fixes and improvements.
+
+            Contributors to this release include:
+            ${{ env.CONTRIBUTORS }}
+
+            For more details, please visit our release notes at: https://buildbot.net/releases/${GITHUB_REF_NAME}.html
