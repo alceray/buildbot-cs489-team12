@@ -12,31 +12,42 @@ on:
   pull_request:
     types: [closed]
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version x.y.z"
+        required: true
 
 jobs:
   release:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.title, 'Release Notes for ')
+    # This step only needs to run if it's a merged release notes PR or a manual dispatch.
+    if: >
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && startsWith(github.event.pull_request.title, 'Release Notes for Version')) 
+      || github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: buildbot/buildbot
+          repository: alceray/buildbot-cs489-team12
           fetch-depth: 0
           path: buildbot
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/checkout@v3
         with:
-          repository: buildbot/bbdocs
+          repository: alceray/bbdocs
           fetch-depth: 0
-          path: ../bbdocs
+          path: bbdocs
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-python@v4
         with:
           python-version: "3.8"
+      - name: Setup Version
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "VERSION=$(echo ${{ github.event.pull_request.title }} | cut -d' ' -f5)" >> $GITHUB_ENV
+          elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          fi
       - name: Release
         run: |
           cd buildbot
-          python -m venv .venv
-          source .venv/bin/activate
-          VERSION=$(echo ${{ github.event.pull_request.title }} | cut -d' ' -f5)
           make release VERSION=$VERSION
