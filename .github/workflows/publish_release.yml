@@ -32,17 +32,22 @@ jobs:
         run: |
           pip install -U pip
           pip install twine requests pyyaml
+      - name: Download and prepare release assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 ./common/download_release.py
       - name: Setup GPG
         uses: crazy-max/ghaction-import-gpg@v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
-      - name: Upload Release
+      - name: Upload release to PyPI
         env:
           TWINE_USERNAME: ${{ secrets.TESTPYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.TESTPYPI_PASSWORD }}
         run: |
-          make finishrelease
+          rm -rf dist/v*
+          twine upload --sign dist/*
   send-announcement-email:
     runs-on: ubuntu-latest
     steps:
