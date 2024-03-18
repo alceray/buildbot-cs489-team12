@@ -15,6 +15,10 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version x.y.z"
+        required: true
 
 jobs:
   upload-to-pypi:
@@ -26,9 +30,7 @@ jobs:
           python-version: "3.8"
       - name: Install dependencies
         run: |
-          python -m venv .venv
-          source .venv/bin/activate
-          python -m pip install --upgrade pip
+          pip install -U pip
           pip install twine
       - name: Setup GPG
         uses: crazy-max/ghaction-import-gpg@v5
@@ -37,8 +39,8 @@ jobs:
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
       - name: Upload Release
         env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+          TWINE_USERNAME: ${{ secrets.TESTPYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.TESTPYPI_PASSWORD }}
         run: |
           make finishrelease
   send-announcement-email:
@@ -51,6 +53,16 @@ jobs:
           prev_version=$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))
           curr_version=$(git describe --abbrev=0 --tags)
           echo "CONTRIBUTORS=$(git shortlog --no-merges -ns $prev_version...$curr_version | sed ':a;N;$!ba;s/\n/\\n/g')" >> $GITHUB_ENV
+      - name: Read email configuration
+        run: |
+          echo "EMAIL_CONFIG=$(cat email_config.json)" >> $GITHUB_ENV
+      - name: Setup version
+        run: |
+          if [ "${{ github.event_name }}" == "release" ]; then
+            echo "VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+          elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "VERSION=v${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          fi
       - name: Send Email to Mailing Lists
         uses: dawidd6/action-send-mail@v3
         with:
@@ -58,13 +70,13 @@ jobs:
           server_port: 465
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
-          subject: New Buildbot Release
-          to: archeray01@gmail.com
-          from: q54lin@uwaterloo.ca
+          subject: ${{ fromJson(env.EMAIL_CONFIG).subject }}
+          to: ${{ join(fromJson(env.EMAIL_CONFIG).to, ',') }}
+          from: ${{ fromJson(env.EMAIL_CONFIG).from }}
           body: |
-            The Buildbot team is pleased to announce the release of Buildbot ${GITHUB_REF_NAME}. This release includes numerous bug fixes and improvements.
+            The Buildbot team is pleased to announce the release of Buildbot $VERSION. This release includes numerous bug fixes and improvements.
 
             Contributors to this release include:
             ${{ env.CONTRIBUTORS }}
 
-            For more details, please visit our release notes at: https://buildbot.net/releases/${GITHUB_REF_NAME}.html
+            For more details, please visit our release notes at: https://github.com/buildbot/buildbot/releases/tag/$VERSION
