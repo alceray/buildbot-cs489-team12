@@ -43,18 +43,18 @@ jobs:
       - name: Setup version
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
-            echo "VERSION=$(echo ${{ github.event.pull_request.title }} | cut -d' ' -f5)" >> $GITHUB_ENV
+            echo "VER=$(echo ${{ github.event.pull_request.title }} | cut -d' ' -f5)" >> $GITHUB_ENV
           elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+            echo "VER=${{ github.event.inputs.version }}" >> $GITHUB_ENV
           fi
       - name: Install dependencies
         run: |
-          cd buildbot
           pip install -U pip setuptools wheel
-          pip install -r requirements-ci.txt -r requirements-cidocs.txt
+          pip install -r buildbot/requirements-ci.txt -r buildbot/requirements-cidocs.txt
           pip install towncrier virtualenv sphinx
           git config user.name github-actions
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
       - name: Perform release
         run: |
-          make release VERSION=$VERSION
+          cd buildbot
+          make release VERSION=$VER
