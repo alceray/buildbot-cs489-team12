@@ -49,6 +49,7 @@ jobs:
           fi
       - name: Install dependencies
         run: |
+          cd buildbot
           pip install -U pip setuptools wheel
           pip install -r requirements-ci.txt -r requirements-cidocs.txt
           pip install towncrier virtualenv sphinx
@@ -56,5 +57,4 @@ jobs:
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
       - name: Perform release
         run: |
-          cd buildbot
           make release VERSION=$VERSION
