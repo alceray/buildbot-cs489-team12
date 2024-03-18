@@ -66,4 +66,5 @@ jobs:
       - name: Perform release
         working-directory: ./buildbot
         run: |
+          git remote add buildbot https://github.com/alceray/buildbot-cs489-team12.git
           make release VERSION=$VERSION
