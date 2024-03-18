@@ -43,9 +43,9 @@ jobs:
       - name: Setup version
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
-            echo "VER=$(echo ${{ github.event.pull_request.title }} | cut -d' ' -f5)" >> $GITHUB_ENV
+            echo "VERSION=$(echo ${{ github.event.pull_request.title }} | cut -d' ' -f5)" >> $GITHUB_ENV
           elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "VER=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
           fi
       - name: Install dependencies
         working-directory: ./buildbot
@@ -55,7 +55,14 @@ jobs:
           pip install towncrier virtualenv sphinx
           git config user.name github-actions
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
       - name: Perform release
         working-directory: ./buildbot
         run: |
-          make release VERSION=$VER
+          make release VERSION=$VERSION
