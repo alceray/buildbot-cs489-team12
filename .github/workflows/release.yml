@@ -57,12 +57,12 @@ jobs:
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
-        working-directory: ./buildbot
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
           git_user_signingkey: true
           git_commit_gpgsign: true
+          workdir: ./buildbot
       - name: Perform release
         working-directory: ./buildbot
         run: |
