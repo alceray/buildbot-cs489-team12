@@ -36,7 +36,7 @@ jobs:
           repository: alceray/bbdocs
           fetch-depth: 0
           path: bbdocs
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.BBDOCS_PAT }}
       - uses: actions/setup-python@v4
         with:
           python-version: "3.8"
