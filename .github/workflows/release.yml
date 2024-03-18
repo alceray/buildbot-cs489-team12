@@ -48,13 +48,14 @@ jobs:
             echo "VER=${{ github.event.inputs.version }}" >> $GITHUB_ENV
           fi
       - name: Install dependencies
+        working-directory: ./buildbot
         run: |
           pip install -U pip setuptools wheel
-          pip install -r buildbot/requirements-ci.txt -r buildbot/requirements-cidocs.txt
+          pip install -r requirements-ci.txt -r requirements-cidocs.txt
           pip install towncrier virtualenv sphinx
           git config user.name github-actions
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
       - name: Perform release
+        working-directory: ./buildbot
         run: |
-          cd buildbot
           make release VERSION=$VER
