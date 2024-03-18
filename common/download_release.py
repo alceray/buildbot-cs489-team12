@@ -19,9 +19,7 @@ def download(session, url, fn):
 
 
 def main():
-    with open(os.path.expanduser("~/.config/hub")) as f:
-        conf = yaml.safe_load(f)
-        token = conf['github.com'][0]['oauth_token']
+    token = os.getenv('GITHUB_TOKEN')
 
     s = requests.Session()
     s.headers.update({'Authorization': 'token ' + token})
