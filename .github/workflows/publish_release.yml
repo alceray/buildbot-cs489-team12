@@ -23,6 +23,11 @@ on:
 jobs:
   upload-to-pypi:
     runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/buildbot
+    permissions:
+      id-token: write
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -32,22 +37,29 @@ jobs:
         run: |
           pip install -U pip
           pip install twine requests pyyaml
+          rm -rf dist
       - name: Setup GPG
         uses: crazy-max/ghaction-import-gpg@v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
-      - name: Download release assets
+      - name: Read repo config
+        run: |
+          echo "REPO_CONFIG=$(cat repo_config.json)" >> $GITHUB_ENV
+      - name: Download and prepare release assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_OWNER: ${{ fromJson(env.REPO_CONFIG).owner }}
+          GITHUB_REPO: ${{ fromJson(env.REPO_CONFIG).repo }}
         run: python3 ./common/download_release.py
-      - name: Upload release to TestPyPI
-        env:
-          TWINE_USERNAME: ${{ secrets.TESTPYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.TESTPYPI_PASSWORD }}
-        run: |
-          rm -rf dist/v*
-          twine upload --sign dist/*
+      - name: Remove certain files
+        run: rm -rf dist/v*
+      - name: Publish package distributions to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.TESTPYPI_API_TOKEN }}
+          repository-url: https://test.pypi.org/legacy/
+
   send-announcement-email:
     runs-on: ubuntu-latest
     steps:
@@ -60,8 +72,8 @@ jobs:
             echo "VERSION=v${{ github.event.inputs.version }}" >> $GITHUB_ENV
           fi
       - name: Generate Contributors List
-        id: contributors
         run: |
+          git fetch --tags
           prev_version=$(git describe --tags --abbrev=0 HEAD^)
           echo "CONTRIBUTORS=$(git shortlog --no-merges -ns $prev_version...$VERSION | sed ':a;N;$!ba;s/\n/\\n/g')" >> $GITHUB_ENV
       - name: Read email configuration
