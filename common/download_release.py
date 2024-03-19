@@ -47,7 +47,7 @@ def main():
             fn = os.path.join('dist', url.split('/')[-1])
             download(s, url, fn)
     # download tag archive
-    url = "https://github.com/{owner}/{repo}/archive/{tag}.tar.gz".format(tag=tag)
+    url = "https://github.com/{owner}/{repo}/archive/{tag}.tar.gz".format(owner=owner, repo=repo, tag=tag)
     fn = os.path.join('dist', "buildbot-{tag}.gitarchive.tar.gz".format(tag=tag))
     download(s, url, fn)
     sigfn = fn + ".asc"
