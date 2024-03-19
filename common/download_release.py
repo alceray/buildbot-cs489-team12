@@ -25,13 +25,13 @@ def main():
 
     s = requests.Session()
     s.headers.update({'Authorization': 'token ' + token})
-    r = s.get("https://api.github.com/repos/{owner}/{repo}/releases/latest")
+    r = s.get("https://api.github.com/repos/{owner}/{repo}/releases/latest".format(owner=owner, repo=repo))
     r.raise_for_status()
     r = r.json()
     tag = r['name']
     upload_url = r['upload_url'].split('{')[0]
     assets = s.get(
-        ("https://api.github.com/repos/{owner}/{repo}/releases/{id}/assets").format(id=r['id'])
+        ("https://api.github.com/repos/{owner}/{repo}/releases/{id}/assets").format(owner=owner, repo=repo, id=r['id'])
     )
     assets.raise_for_status()
     assets = assets.json()
