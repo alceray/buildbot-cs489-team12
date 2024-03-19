@@ -79,11 +79,16 @@ jobs:
       - name: Generate Contributors List
         run: |
           git fetch --tags
-          prev_version=$(git describe --abbrev=0 --tags $(git describe --abbrev=0)^)
+          prev_version=$(git tag --sort=-creatordate | sed -n '2p')
           echo "CONTRIBUTORS=$(git shortlog --no-merges -ns $prev_version...$VERSION | sed ':a;N;$!ba;s/\n/\\n/g')" >> $GITHUB_ENV
       - name: Read email configuration
+        id: set_var
         run: |
-          echo "EMAIL_CONFIG=$(cat .github/email_config.json)" >> $GITHUB_ENV
+          content=`cat .github/email_config.json`
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          echo "::set-output name=email_config::$content"
       - name: Send Email to Mailing Lists
         uses: dawidd6/action-send-mail@v3
         with:
@@ -91,9 +96,9 @@ jobs:
           server_port: 465
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
-          subject: ${{ fromJson(env.EMAIL_CONFIG).subject }}
-          to: ${{ join(fromJson(env.EMAIL_CONFIG).to, ',') }}
-          from: ${{ fromJson(env.EMAIL_CONFIG).from }}
+          subject: ${{ fromJson(step.set_var.outputs.email_config).subject }}
+          to: ${{ join(fromJson(step.set_var.outputs.email_config).to, ',') }}
+          from: ${{ fromJson(step.set_var.outputs.email_config).from }}
           body: |
             The Buildbot team is pleased to announce the release of Buildbot $VERSION. This release includes numerous bug fixes and improvements.
 
