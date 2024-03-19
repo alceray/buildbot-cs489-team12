@@ -45,7 +45,7 @@ jobs:
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
       - name: Read repo config
         run: |
-          echo "REPO_CONFIG=$(cat repo_config.json)" >> $GITHUB_ENV
+          echo "REPO_CONFIG=$(cat .github/repo_config.json)" >> $GITHUB_ENV
       - name: Download and prepare release assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -78,7 +78,7 @@ jobs:
           echo "CONTRIBUTORS=$(git shortlog --no-merges -ns $prev_version...$VERSION | sed ':a;N;$!ba;s/\n/\\n/g')" >> $GITHUB_ENV
       - name: Read email configuration
         run: |
-          echo "EMAIL_CONFIG=$(cat email_config.json)" >> $GITHUB_ENV
+          echo "EMAIL_CONFIG=$(cat .github/email_config.json)" >> $GITHUB_ENV
       - name: Send Email to Mailing Lists
         uses: dawidd6/action-send-mail@v3
         with:
