@@ -76,9 +76,9 @@ jobs:
           fi
       - name: Retrieve contributors
         run: |
-          git fetch --tags
+          git fetch --tags --force
           prev_version=$(git tag --sort=-creatordate | sed -n '2p')
-          echo "CONTRIBUTORS=$(git shortlog --no-merges -ns $prev_version...$VERSION)" >> $GITHUB_ENV
+          echo "CONTRIBUTORS=$(git shortlog --no-merges -ns $prev_version...$VERSION | sed ':a;N;$!ba;s/\n/, /g')" >> $GITHUB_ENV
       - name: Read repository configuration
         id: repo_var
         run: |
