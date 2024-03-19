@@ -44,13 +44,18 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
       - name: Read repo config
+        id: set_var
         run: |
-          echo "REPO_CONFIG=$(cat .github/repo_config.json)" >> $GITHUB_ENV
+          content=`cat .github/repo_config.json`
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          echo "::set-output name=repo_config::$content"
       - name: Download and prepare release assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_OWNER: ${{ fromJson(env.REPO_CONFIG).owner }}
-          GITHUB_REPO: ${{ fromJson(env.REPO_CONFIG).repo }}
+          GITHUB_OWNER: ${{ fromJson(steps.set_var.outputs.repo_config).owner }}
+          GITHUB_REPO: ${{ fromJson(steps.set_var.outputs.repo_config).repo }}
         run: python3 ./common/download_release.py
       - name: Remove certain files
         run: rm -rf dist/v*
@@ -74,7 +79,7 @@ jobs:
       - name: Generate Contributors List
         run: |
           git fetch --tags
-          prev_version=$(git describe --tags --abbrev=0 HEAD^)
+          prev_version=$(git describe --abbrev=0 --tags $(git describe --abbrev=0)^)
           echo "CONTRIBUTORS=$(git shortlog --no-merges -ns $prev_version...$VERSION | sed ':a;N;$!ba;s/\n/\\n/g')" >> $GITHUB_ENV
       - name: Read email configuration
         run: |
