@@ -27,13 +27,19 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: alceray/buildbot-cs489-team12
-          fetch-depth: 0
           path: buildbot
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Read repository configuration
+        working-directory: ./buildbot
+        id: var
+        run: |
+          content=`cat .github/repo_config.json`
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          echo "::set-output name=repo_config::$content"
       - uses: actions/checkout@v3
         with:
-          repository: alceray/bbdocs
+          repository: ${{ fromJson(steps.var.outputs.repo_config).owner }}/bbdocs
           fetch-depth: 0
           path: bbdocs
           token: ${{ secrets.BBDOCS_PAT }}
@@ -66,5 +72,5 @@ jobs:
         run: |
           git config --global user.name github-actions
           git config --global user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git remote add buildbot https://github.com/alceray/buildbot-cs489-team12.git
+          git remote add buildbot https://github.com/${{ fromJson(steps.var.outputs.repo_config).owner }}/${{ fromJson(steps.var.outputs.repo_config).repo }}.git
           make release VERSION=$VERSION

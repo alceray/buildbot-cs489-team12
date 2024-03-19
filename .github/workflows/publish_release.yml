@@ -42,7 +42,7 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
       - name: Read repository configuration
-        id: set_var
+        id: var
         run: |
           content=`cat .github/repo_config.json`
           content="${content//'%'/'%25'}"
@@ -52,8 +52,8 @@ jobs:
       - name: Download and prepare release assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_OWNER: ${{ fromJson(steps.set_var.outputs.repo_config).owner }}
-          GITHUB_REPO: ${{ fromJson(steps.set_var.outputs.repo_config).repo }}
+          GITHUB_OWNER: ${{ fromJson(steps.var.outputs.repo_config).owner }}
+          GITHUB_REPO: ${{ fromJson(steps.var.outputs.repo_config).repo }}
         run: python3 ./common/download_release.py
       - name: Remove dist files
         run: rm -rf dist/v*
@@ -79,8 +79,16 @@ jobs:
           git fetch --tags
           prev_version=$(git tag --sort=-creatordate | sed -n '2p')
           echo "CONTRIBUTORS=$(git shortlog --no-merges -ns $prev_version...$VERSION)" >> $GITHUB_ENV
+      - name: Read repository configuration
+        id: repo_var
+        run: |
+          content=`cat .github/repo_config.json`
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          echo "::set-output name=repo_config::$content"
       - name: Read email configuration
-        id: set_var
+        id: email_var
         run: |
           content=`cat .github/email_config.json`
           content="${content//'%'/'%25'}"
@@ -94,13 +102,13 @@ jobs:
           server_port: 465
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
-          subject: ${{ fromJson(steps.set_var.outputs.email_config).subject }}
-          to: ${{ join(fromJson(steps.set_var.outputs.email_config).to, ',') }}
-          from: ${{ fromJson(steps.set_var.outputs.email_config).from }}
+          subject: ${{ fromJson(steps.email_var.outputs.email_config).subject }}
+          to: ${{ join(fromJson(steps.email_var.outputs.email_config).to, ',') }}
+          from: ${{ fromJson(steps.email_var.outputs.email_config).from }}
           body: |
             The Buildbot team is pleased to announce the release of Buildbot ${{ env.VERSION }}. This release includes several bug fixes and new features.
 
             Contributors to this release include:
             ${{ env.CONTRIBUTORS }}
 
-            For more details, please visit our release notes at: https://github.com/buildbot/buildbot/releases/tag/${{ env.VERSION }}
+            For more details, please visit our release notes at: https://github.com/${{ fromJson(steps.repo_var.outputs.repo_config).owner }}/${{ fromJson(steps.repo_var.outputs.repo_config).repo }}/releases/tag/${{ env.VERSION }}
