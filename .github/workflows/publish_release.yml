@@ -41,7 +41,7 @@ jobs:
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
-      - name: Read repo config
+      - name: Read repository configuration
         id: set_var
         run: |
           content=`cat .github/repo_config.json`
@@ -74,11 +74,11 @@ jobs:
           elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             echo "VERSION=v${{ github.event.inputs.version }}" >> $GITHUB_ENV
           fi
-      - name: Generate Contributors List
+      - name: Retrieve contributors
         run: |
           git fetch --tags
           prev_version=$(git tag --sort=-creatordate | sed -n '2p')
-          echo "CONTRIBUTORS=$(git shortlog --no-merges -ns $prev_version...$VERSION | sed ':a;N;$!ba;s/\n/\\n/g')" >> $GITHUB_ENV
+          echo "CONTRIBUTORS=$(git shortlog --no-merges -ns $prev_version...$VERSION)" >> $GITHUB_ENV
       - name: Read email configuration
         id: set_var
         run: |
@@ -87,7 +87,7 @@ jobs:
           content="${content//$'\n'/'%0A'}"
           content="${content//$'\r'/'%0D'}"
           echo "::set-output name=email_config::$content"
-      - name: Send Email to Mailing Lists
+      - name: Send email to mailing lists
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
@@ -98,9 +98,9 @@ jobs:
           to: ${{ join(fromJson(steps.set_var.outputs.email_config).to, ',') }}
           from: ${{ fromJson(steps.set_var.outputs.email_config).from }}
           body: |
-            The Buildbot team is pleased to announce the release of Buildbot $VERSION. This release includes numerous bug fixes and improvements.
+            The Buildbot team is pleased to announce the release of Buildbot ${{ env.VERSION }}. This release includes several bug fixes and new features.
 
             Contributors to this release include:
             ${{ env.CONTRIBUTORS }}
 
-            For more details, please visit our release notes at: https://github.com/buildbot/buildbot/releases/tag/$VERSION
+            For more details, please visit our release notes at: https://github.com/buildbot/buildbot/releases/tag/${{ env.VERSION }}
