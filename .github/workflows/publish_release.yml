@@ -26,8 +26,6 @@ jobs:
     environment:
       name: testpypi
       url: https://test.pypi.org/p/buildbot
-    permissions:
-      id-token: write
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -57,7 +55,7 @@ jobs:
           GITHUB_OWNER: ${{ fromJson(steps.set_var.outputs.repo_config).owner }}
           GITHUB_REPO: ${{ fromJson(steps.set_var.outputs.repo_config).repo }}
         run: python3 ./common/download_release.py
-      - name: Remove certain files
+      - name: Remove dist files
         run: rm -rf dist/v*
       - name: Publish package distributions to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1

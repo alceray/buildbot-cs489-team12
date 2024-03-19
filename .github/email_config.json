@@ -1,5 +1,5 @@
 {
-    "to": ["archeray01@gmail.com"],
-    "from": "41898282+github-actions[bot]@users.noreply.github.com",
-    "subject": "GitHub Notification: New Buildbot Release"
+  "to": ["archeray01@gmail.com", "ray02lin@gmail.com"],
+  "from": "release@buildbot.net",
+  "subject": "GitHub Notification: New Buildbot Release"
 }
