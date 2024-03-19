@@ -28,6 +28,8 @@ jobs:
       url: https://test.pypi.org/p/buildbot
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v4
         with:
           python-version: "3.8"
@@ -78,7 +80,10 @@ jobs:
         run: |
           git fetch --tags --force
           prev_version=$(git tag --sort=-creatordate | sed -n '2p')
-          echo "CONTRIBUTORS=$(git shortlog --no-merges -ns $prev_version...$VERSION | sed ':a;N;$!ba;s/\n/, /g')" >> $GITHUB_ENV
+          contributors=$(git shortlog --no-merges -ns $prev_version...$VERSION | sed ':a;N;$!ba;s/\n/\\n/g')
+          echo "CONTRIBUTORS<<EOF" >> $GITHUB_ENV
+          echo -e "$contributors" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
       - name: Read repository configuration
         id: repo_var
         run: |
