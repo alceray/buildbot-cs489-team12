@@ -78,7 +78,6 @@ jobs:
           fi
       - name: Retrieve contributors
         run: |
-          git fetch --tags --force
           prev_version=$(git tag --sort=-creatordate | sed -n '2p')
           contributors=$(git shortlog --no-merges -ns $prev_version...$VERSION | sed ':a;N;$!ba;s/\n/\\n/g')
           echo "CONTRIBUTORS<<EOF" >> $GITHUB_ENV
