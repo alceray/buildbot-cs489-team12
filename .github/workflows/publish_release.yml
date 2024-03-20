@@ -43,19 +43,10 @@ jobs:
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
-      - name: Read repository configuration
-        id: var
-        run: |
-          content=`cat .github/repo_config.json`
-          content="${content//'%'/'%25'}"
-          content="${content//$'\n'/'%0A'}"
-          content="${content//$'\r'/'%0D'}"
-          echo "::set-output name=repo_config::$content"
       - name: Download and prepare release assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_OWNER: ${{ fromJson(steps.var.outputs.repo_config).owner }}
-          GITHUB_REPO: ${{ fromJson(steps.var.outputs.repo_config).repo }}
+          GITHUB_REPO: ${{ github.repository }}
         run: python3 ./common/download_release.py
       - name: Remove dist files
         run: rm -rf dist/v*
@@ -85,14 +76,6 @@ jobs:
           echo "CONTRIBUTORS<<EOF" >> $GITHUB_ENV
           echo -e "$contributors" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
-      - name: Read repository configuration
-        id: repo_var
-        run: |
-          content=`cat .github/repo_config.json`
-          content="${content//'%'/'%25'}"
-          content="${content//$'\n'/'%0A'}"
-          content="${content//$'\r'/'%0D'}"
-          echo "::set-output name=repo_config::$content"
       - name: Read email configuration
         id: email_var
         run: |
@@ -117,4 +100,4 @@ jobs:
             Contributors to this release include:
             ${{ env.CONTRIBUTORS }}
 
-            For more details, please visit our release notes at: https://github.com/${{ fromJson(steps.repo_var.outputs.repo_config).owner }}/${{ fromJson(steps.repo_var.outputs.repo_config).repo }}/releases/tag/${{ env.VERSION }}
+            For more details, please visit our release notes at: https://github.com/${{ github.repository }}/releases/tag/${{ env.VERSION }}

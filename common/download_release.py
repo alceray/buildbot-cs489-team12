@@ -20,18 +20,17 @@ def download(session, url, fn):
 
 def main():
     token = os.getenv('GITHUB_TOKEN')
-    owner = os.getenv('GITHUB_OWNER')
     repo = os.getenv('GITHUB_REPO')
 
     s = requests.Session()
     s.headers.update({'Authorization': 'token ' + token})
-    r = s.get("https://api.github.com/repos/{owner}/{repo}/releases/latest".format(owner=owner, repo=repo))
+    r = s.get("https://api.github.com/repos/{repo}/releases/latest".format(repo=repo))
     r.raise_for_status()
     r = r.json()
     tag = r['name']
     upload_url = r['upload_url'].split('{')[0]
     assets = s.get(
-        ("https://api.github.com/repos/{owner}/{repo}/releases/{id}/assets").format(owner=owner, repo=repo, id=r['id'])
+        ("https://api.github.com/repos/{repo}/releases/{id}/assets").format(repo=repo, id=r['id'])
     )
     assets.raise_for_status()
     assets = assets.json()
@@ -47,7 +46,7 @@ def main():
             fn = os.path.join('dist', url.split('/')[-1])
             download(s, url, fn)
     # download tag archive
-    url = "https://github.com/{owner}/{repo}/archive/{tag}.tar.gz".format(owner=owner, repo=repo, tag=tag)
+    url = "https://github.com/{repo}/archive/{tag}.tar.gz".format(repo=repo, tag=tag)
     fn = os.path.join('dist', "buildbot-{tag}.gitarchive.tar.gz".format(tag=tag))
     download(s, url, fn)
     sigfn = fn + ".asc"

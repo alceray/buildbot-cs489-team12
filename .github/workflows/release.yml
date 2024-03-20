@@ -28,18 +28,9 @@ jobs:
       - uses: actions/checkout@v3
         with:
           path: buildbot
-      - name: Read repository configuration
-        working-directory: ./buildbot
-        id: var
-        run: |
-          content=`cat .github/repo_config.json`
-          content="${content//'%'/'%25'}"
-          content="${content//$'\n'/'%0A'}"
-          content="${content//$'\r'/'%0D'}"
-          echo "::set-output name=repo_config::$content"
       - uses: actions/checkout@v3
         with:
-          repository: ${{ fromJson(steps.var.outputs.repo_config).owner }}/bbdocs
+          repository: ${{ github.repository_owner }}/bbdocs
           path: bbdocs
           token: ${{ secrets.BBDOCS_PAT }}
       - uses: actions/setup-python@v4
@@ -71,5 +62,5 @@ jobs:
         run: |
           git config --global user.name github-actions
           git config --global user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git remote add buildbot https://github.com/${{ fromJson(steps.var.outputs.repo_config).owner }}/${{ fromJson(steps.var.outputs.repo_config).repo }}.git
+          git remote add buildbot https://github.com/${{ github.repository }}.git
           make release VERSION=$VERSION
