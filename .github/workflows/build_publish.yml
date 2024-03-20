@@ -60,7 +60,15 @@ jobs:
           name: Build Artifacts
           path: dist
 
-      - name: Rename and upload binaries to GitHub release
+      - name: Rename binaries 
+        working-directory: dist
         run: |
-          mv dist/buildbot-worker dist/buildbot-worker-linux-amd64-${{ github.ref }}.bin
-          ghr -t ${{ secrets.GITHUB_TOKEN }} -u ${{ github.repository_owner }} -r ${{ github.repository }} --replace ${{ github.ref }} dist/
+          mv dist/buildbot-worker dist/buildbot-worker-linux-amd64-${{ github.event.inputs.version }}.bin
+          ghr -t ${{ secrets.GITHUB_TOKEN }} -u ${{ github.repository_owner }} -r ${{ github.repository }} --replace ${{ github.event.inputs.version }} dist/
+
+      - name: Upload binaries to Github release
+        uses: fnkr/github-action-ghr@v1
+        env:
+          GHR_COMPRESS: gz
+          GHR_PATH: dist/
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
