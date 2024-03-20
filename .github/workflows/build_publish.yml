@@ -64,7 +64,6 @@ jobs:
         working-directory: dist
         run: |
           mv dist/buildbot-worker dist/buildbot-worker-linux-amd64-${{ github.event.inputs.version }}.bin
-          ghr -t ${{ secrets.GITHUB_TOKEN }} -u ${{ github.repository_owner }} -r ${{ github.repository }} --replace ${{ github.event.inputs.version }} dist/
 
       - name: Upload binaries to Github release
         uses: fnkr/github-action-ghr@v1
