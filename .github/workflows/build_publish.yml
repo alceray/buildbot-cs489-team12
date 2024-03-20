@@ -1,0 +1,62 @@
+name: Python Build
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install -U pip setuptools wheel
+          pip install -r requirements-ci.txt
+          pip install -r requirements-cidocs.txt
+          pip install pyinstaller
+
+      - name: Run tests
+        run: |
+          source .venv/bin/activate
+          make docs-release
+          make tarballs
+          pip install -e www/react-base
+          pyinstaller pyinstaller/buildbot-worker.spec
+          SANDBOXED_WORKER_PATH=$(pwd)/dist/buildbot-worker
+          trial --reporter=text --rterrors buildbot.test.integration.interop
+
+      - name: Persist artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Build Artifacts
+          path: |
+            dist
+            master/docs/_build/html/
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: Build Artifacts
+          path: dist
+
+      - name: Rename and upload binaries to GitHub release
+        run: |
+          mv dist/buildbot-worker dist/buildbot-worker-linux-amd64-${{ github.ref }}.bin
+          ghr -t ${{ secrets.GITHUB_TOKEN }} -u ${{ github.repository_owner }} -r ${{ github.repository }} --replace ${{ github.ref }} dist/
