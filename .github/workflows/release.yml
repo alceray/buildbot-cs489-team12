@@ -94,7 +94,7 @@ jobs:
           SANDBOXED_WORKER_PATH=$(pwd)/dist/buildbot-worker
           trial --reporter=text --rterrors buildbot.test.integration.interop
       - name: Persist artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: Build Artifacts
           path: |
