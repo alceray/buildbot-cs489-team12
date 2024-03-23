@@ -118,16 +118,17 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: Build Artifacts
-          path: dist
+          path: .
       - name: Rename binaries
         run: |
-          mv dist/dist/* dist/ && rmdir dist/dist/
           mv dist/buildbot-worker dist/buildbot-worker-linux-amd64-$VERSION.bin
       - name: Create Github release and upload binaries
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ env.VERSION }}
-          files: dist/*
+          files: |
+            dist/*
+            master/docs/_build/html/*
           draft: false
           prerelease: false
         env:
