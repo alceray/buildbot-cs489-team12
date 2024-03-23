@@ -84,9 +84,19 @@ jobs:
           pip install -r requirements-ci.txt
           pip install -r requirements-cidocs.txt
           pip install pyinstaller
+      - name: Setup version
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            VERSION="$(echo ${{ github.event.pull_request.title }} | cut -d' ' -f5)"
+            echo "VERSION=$VERSION" >> $GITHUB_ENV
+          elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+            echo "VERSION=$VERSION" >> $GITHUB_ENV
+          fi
       - name: Run tests
         run: |
           source .venv/bin/activate
+          export VERSION=$VERSION
           make docs-release
           make tarballs
           pip install -e www/react-base
@@ -128,7 +138,6 @@ jobs:
           tag_name: v${{ env.VERSION }}
           files: |
             dist/*
-            master/docs/_build/html/*
           draft: false
           prerelease: false
         env:
