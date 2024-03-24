@@ -93,7 +93,6 @@ jobs:
           fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "BUILDBOT_VERSION=$VERSION" >> $GITHUB_ENV
-          fi
       - name: Generate tarballs and run tests
         run: |
           source .venv/bin/activate
