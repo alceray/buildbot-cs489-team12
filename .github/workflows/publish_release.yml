@@ -39,7 +39,7 @@ jobs:
           pip install twine requests pyyaml
           rm -rf dist
       - name: Setup GPG
-        uses: crazy-max/ghaction-import-gpg@v5
+        uses: crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -78,13 +78,8 @@ jobs:
           echo -e "$contributors" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
       - name: Read email configuration
-        id: email_var
         run: |
-          content=`cat .github/email_config.json`
-          content="${content//'%'/'%25'}"
-          content="${content//$'\n'/'%0A'}"
-          content="${content//$'\r'/'%0D'}"
-          echo "EMAIL_CONFIG=$content" >> $GITHUB_ENV
+          echo "EMAIL_CONFIG=$(jq -c . < .github/email_config.json)" >> $GITHUB_ENV
       - name: Send email to mailing lists
         uses: dawidd6/action-send-mail@v3
         with:
