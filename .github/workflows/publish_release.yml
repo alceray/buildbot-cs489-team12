@@ -27,10 +27,10 @@ jobs:
       name: testpypi
       url: https://test.pypi.org/p/buildbot
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.8"
       - name: Install dependencies
@@ -59,9 +59,9 @@ jobs:
   send-announcement-email:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Get tags
-        run: git fetch --tags --force
+        run: git fetch origin --tags --force
       - name: Setup version
         run: |
           if [ "${{ github.event_name }}" == "release" ]; then
@@ -72,6 +72,7 @@ jobs:
       - name: Retrieve contributors
         run: |
           prev_version=$(git tag --sort=-creatordate | sed -n '2p')
+          echo "Previous Version: $prev_version, Current Version: $VERSION"
           contributors=$(git shortlog --no-merges -ns $prev_version...$VERSION | sed ':a;N;$!ba;s/\n/\\n/g')
           echo "CONTRIBUTORS<<EOF" >> $GITHUB_ENV
           echo -e "$contributors" >> $GITHUB_ENV
@@ -83,7 +84,7 @@ jobs:
           content="${content//'%'/'%25'}"
           content="${content//$'\n'/'%0A'}"
           content="${content//$'\r'/'%0D'}"
-          echo "::set-output name=email_config::$content"
+          echo "email_config=$content" >> $GITHUB_OUTPUT
       - name: Send email to mailing lists
         uses: dawidd6/action-send-mail@v3
         with:

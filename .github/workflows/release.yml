@@ -24,10 +24,10 @@ jobs:
       (github.event_name == 'pull_request' && github.event.pull_request.merged == true && startsWith(github.event.pull_request.title, 'Release Notes for Version')) 
       || github.event_name == 'workflow_dispatch'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: buildbot
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: ${{ github.repository_owner }}/bbdocs
           path: bbdocs
@@ -71,9 +71,9 @@ jobs:
     needs: release
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: "3.8"
       - name: Install dependencies
@@ -133,11 +133,10 @@ jobs:
         run: |
           mv dist/buildbot-worker dist/buildbot-worker-linux-amd64-$VERSION.bin
       - name: Create Github release and upload binaries
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.VERSION }}
-          files: |
-            dist/*
+          files: dist/*
           draft: true
           prerelease: false
         env:
