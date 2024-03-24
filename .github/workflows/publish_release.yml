@@ -61,7 +61,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Get tags
-        run: git fetch --tags origin
+        run: git fetch --tags --force
       - name: Setup version
         run: |
           if [ "${{ github.event_name }}" == "release" ]; then
