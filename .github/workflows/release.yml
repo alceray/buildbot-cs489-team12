@@ -32,7 +32,7 @@ jobs:
           repository: ${{ github.repository_owner }}/bbdocs
           path: bbdocs
           token: ${{ secrets.BBDOCS_PAT }}
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.8"
       - name: Setup version
