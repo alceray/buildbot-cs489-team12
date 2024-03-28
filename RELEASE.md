@@ -24,7 +24,7 @@ Merge the PR created in step 2.
 
 ## Step 4: Perform release
 
-The merge in step 3 triggers the `Perform Release` workflow. This creates the tag `v<x.y.z>`, generates documentation, copies it to bbodcs repo, pushes all the changes.
+The merge in step 3 triggers the `Perform Release` workflow. This creates the tag `v<x.y.z>`, generates documentation, copies it to [bbdocs](https://github.com/alceray/bbdocs) repo, and pushes all the changes.
 
 The following jobs will make tarballs and upload them in a draft release to GitHub Releases.
 
