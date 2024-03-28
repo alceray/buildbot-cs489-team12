@@ -3,7 +3,9 @@
 This document is documentation intended for Buildbot maintainers with write access.
 It documents the release process of Buildbot.
 
-Note: This adapts and automates the release process in [RELEASING.rst](./RELEASING.rst) with GitHub workflows. The results should generally be the same.
+### Notes
+* This adapts and automates the release process in [RELEASING.rst](./RELEASING.rst) with GitHub workflows. The results should generally be the same.
+* Only steps 2, 3, and 5 require manual action.
 
 ## Step 1: Verify that external dependants can be built
 
@@ -40,5 +42,3 @@ Publishing the release in step 5 triggers the `Publish Release` workflow, which 
 ## Step 7: Announce release
 
 While step 6 runs, the same workflow also sends an announcement to the mailing lists specified in `.github/email_config.json`, with the contributors to this release included.
-
-Note: The only steps that require manual action are steps 2, 3, and 5.
